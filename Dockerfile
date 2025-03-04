@@ -11,11 +11,13 @@ RUN apt-get update && \
         libz-dev \
         libcurl4-openssl-dev
 
-RUN mkdir /sm64
 WORKDIR /sm64
+
 ENV PATH="/sm64/tools:${PATH}"
 
-RUN make -j HEADLESS=1
+ADD . /sm64
+
+RUN make clean && make -j HEADLESS=1
 
 FROM ubuntu:jammy
 COPY --from=build  /sm64/build/sm64coopdx /bin
