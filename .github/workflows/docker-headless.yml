@@ -2,29 +2,31 @@ name: Docker headless image
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main, feat/headless-docker]
-    paths:
-      - "Dockerfile"
-      - ".github/workflows/docker-headless.yml"
-      - "Makefile"
-      - "src/**"
-      - "include/**"
-      - "actors/**"
-      - "levels/**"
-      - "bin/**"
-      - "data/**"
-      - "sound/**"
-      - "text/**"
-      - "textures/**"
-      - "lib/**"
-      - "tools/**"
-      - "mods/**"
-      - "dynos/**"
-      - "lang/**"
-      - "palettes/**"
-      - "assets.json"
-      - "charmap*.txt"
+  # Homelab native builds first; re-enable push triggers after lab validation.
+  # push:
+  #   branches: [main, feat/headless-docker]
+  #   paths:
+  #     - "Dockerfile"
+  #     - ".github/workflows/docker-headless.yml"
+  #     - "Makefile"
+  #     - "src/**"
+  #     - "include/**"
+  #     - "actors/**"
+  #     - "levels/**"
+  #     - "bin/**"
+  #     - "data/**"
+  #     - "sound/**"
+  #     - "text/**"
+  #     - "textures/**"
+  #     - "lib/**"
+  #     - "tools/**"
+  #     - "mods/**"
+  #     - "dynos/**"
+  #     - "lang/**"
+  #     - "palettes/**"
+  #     - "assets.json"
+  #     - "charmap*.txt"
+  #     - "updater/**"
 
 env:
   REGISTRY: ghcr.io
