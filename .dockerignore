@@ -1,0 +1,13 @@
+.git
+.github
+build
+*.z64
+*.sav
+sm64_save_file.bin
+sm64config.txt
+.assets-local.txt
+**/.DS_Store
+DOCKER.md
+README.md
+docs
+updater
