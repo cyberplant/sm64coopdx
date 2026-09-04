@@ -14,11 +14,12 @@
 
 # syntax=docker/dockerfile:1
 
-FROM ubuntu:22.04 AS build
+FROM debian:bookworm-slim AS build
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+        binutils \
         bsdmainutils \
         build-essential \
         ca-certificates \
@@ -34,38 +35,46 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /src
 COPY . .
 
-# DISCORD_SDK=0 avoids shipping discord_game_sdk.so in the server image.
-# Headless mode is selected at runtime via --headless (no HEADLESS make flag).
+# DISCORD_SDK=0 avoids shipping discord_game_sdk.so.
+# DEBUG_INFO_LEVEL=0 shrinks the binary (headless does not need -g).
+# Headless mode is selected at runtime via --headless.
 # On aarch64 the binary is named sm64coopdx.arm — normalize for the runtime stage.
-RUN make -j"$(nproc)" DISCORD_SDK=0 \
+RUN make -j"$(nproc)" DISCORD_SDK=0 DEBUG_INFO_LEVEL=0 \
     && if [ -e build/us_pc/sm64coopdx.arm ] && [ ! -e build/us_pc/sm64coopdx ]; then \
          cp -a build/us_pc/sm64coopdx.arm build/us_pc/sm64coopdx; \
        fi \
+    && strip --strip-unneeded build/us_pc/sm64coopdx \
     && test -x build/us_pc/sm64coopdx
 
-FROM ubuntu:22.04 AS runtime
+FROM debian:bookworm-slim AS runtime
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Linked at build time even when --headless keeps the dummy gfx/audio backends.
+# Binary still links libGL/libSDL2 even with --headless (dummy backends).
+# Install the shared libs, then drop Mesa DRI + LLVM (~150MB) — never used headless.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         libcurl4 \
-        libglew2.2 \
         libgl1 \
         libsdl2-2.0-0 \
         zlib1g \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+        /usr/lib/*/dri \
+        /usr/lib/*/libLLVM* \
+        /usr/share/doc \
+        /usr/share/man
 
 WORKDIR /opt/sm64coopdx
 
+# Binary + tiny runtime data. Built-in mods (~30MB, mostly arena) are omitted;
+# enable mods from the /data volume (NFS) instead.
 COPY --from=build /src/build/us_pc/sm64coopdx ./
 COPY --from=build /src/build/us_pc/dynos ./dynos
 COPY --from=build /src/build/us_pc/lang ./lang
-COPY --from=build /src/build/us_pc/mods ./mods
 COPY --from=build /src/build/us_pc/palettes ./palettes
+RUN mkdir -p mods
 
-# Persist config/saves and provide baserom.us.z64 via this mount.
+# Persist config/saves/mods and provide baserom.us.z64 via this mount.
 VOLUME ["/data"]
 
 EXPOSE 7777/udp
