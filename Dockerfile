@@ -50,12 +50,14 @@ FROM debian:bookworm-slim AS runtime
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Binary still links libGL/libSDL2 even with --headless (dummy backends).
-# Install the shared libs, then drop Mesa DRI + LLVM (~150MB) — never used headless.
+# Binary still links libGL/libGLESv2/libSDL2 even with --headless (dummy backends).
+# aarch64 links GLESv2; amd64 links GL — install both. Then drop Mesa DRI + LLVM
+# (~150MB) — never used headless.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         libcurl4 \
         libgl1 \
+        libgles2 \
         libsdl2-2.0-0 \
         zlib1g \
     && rm -rf /var/lib/apt/lists/* \
