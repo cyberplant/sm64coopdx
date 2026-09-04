@@ -10,4 +10,7 @@ sm64config.txt
 DOCKER.md
 README.md
 docs
-updater
+# Keep updater/linux — make copies coopdx_updater into build/us_pc.
+updater/win64
+updater/mac_arm
+updater/mac_intel
