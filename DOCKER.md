@@ -30,6 +30,8 @@ docker run --rm -p 7777:7777/udp \
 
 Default args: `--headless --server 7777 --savepath /data --hide-loading-screen --skip-update-check --no-discord`.
 
+The image ships the stripped binary plus `dynos` / `lang` / `palettes` only (no bundled mods, no Mesa DRI/LLVM). Put optional mods next to the ROM under the `/data` mount.
+
 Override at the end of `docker run`, for example:
 
 ```bash
