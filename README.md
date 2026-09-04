@@ -18,5 +18,9 @@ sm64coopdx is moddable via Lua, similar to Roblox and Garry's Mod's Lua APIs. To
 ## Wiki
 The wiki is made using GitHub's wiki feature, you can go to the wiki tab or click [here](https://github.com/coop-deluxe/sm64coopdx/wiki).
 
+## Docker (headless server)
+
+See [DOCKER.md](DOCKER.md) for building and running a dedicated headless server image (ROM provided at runtime, not baked into the image).
+
 ## Community
 We have an official Discord server open to the public [here](https://discord.gg/TJVKHS4).
