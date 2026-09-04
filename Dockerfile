@@ -36,7 +36,12 @@ COPY . .
 
 # DISCORD_SDK=0 avoids shipping discord_game_sdk.so in the server image.
 # Headless mode is selected at runtime via --headless (no HEADLESS make flag).
-RUN make -j"$(nproc)" DISCORD_SDK=0
+# On aarch64 the binary is named sm64coopdx.arm — normalize for the runtime stage.
+RUN make -j"$(nproc)" DISCORD_SDK=0 \
+    && if [ -e build/us_pc/sm64coopdx.arm ] && [ ! -e build/us_pc/sm64coopdx ]; then \
+         cp -a build/us_pc/sm64coopdx.arm build/us_pc/sm64coopdx; \
+       fi \
+    && test -x build/us_pc/sm64coopdx
 
 FROM ubuntu:22.04 AS runtime
 
