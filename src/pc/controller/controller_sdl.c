@@ -15,6 +15,7 @@
 #include "controller_sdl.h"
 #include "controller_mouse.h"
 #include "pc/pc_main.h"
+#include "pc/cliopts.h"
 #include "pc/configfile.h"
 #include "pc/platform.h"
 #include "pc/fs/fs.h"
@@ -101,6 +102,11 @@ static void controller_sdl_bind(void) {
 }
 
 static void controller_sdl_init(void) {
+    // Dedicated servers have no pads; skip SDL so it cannot swallow Ctrl-C.
+    if (gCLIOpts.headless) {
+        return;
+    }
+
     // Allows extended reports on PS4 and PS5 controllers
     if (configExtendedReports) {
         SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, "1");
