@@ -1,0 +1,16 @@
+.git
+.github
+build
+*.z64
+*.sav
+sm64_save_file.bin
+sm64config.txt
+.assets-local.txt
+**/.DS_Store
+DOCKER.md
+README.md
+docs
+# Keep updater/linux — make copies coopdx_updater into build/us_pc.
+updater/win64
+updater/mac_arm
+updater/mac_intel

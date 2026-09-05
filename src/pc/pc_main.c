@@ -117,7 +117,7 @@ void dispatch_audio_sptask(UNUSED struct SPTask *spTask) {}
 void set_vblank_handler(UNUSED s32 index, UNUSED struct VblankHandler *handler, UNUSED OSMesgQueue *queue, UNUSED OSMesg *msg) {}
 
 void send_display_list(struct SPTask *spTask) {
-    if (!gGameInited) { return; }
+    if (!gGameInited || gCLIOpts.headless) { return; }
     gfx_run((Gfx *)spTask->task.t.data_ptr);
 }
 
@@ -256,7 +256,31 @@ static void select_graphics_backend(void) {
     }
 }
 
+// Dedicated/headless servers have no display: skip the software RDP interpreter
+// (gfx_run_dl) and only pace the 30 Hz game/network tick. Otherwise headless
+// pegs a full CPU core interpreting display lists that are never shown.
+static void produce_headless_frame_delay(void) {
+    f64 targetTime = sFrameTimeStart + sFrameTime;
+    f64 curTime = clock_elapsed_f64();
+    f64 delay = targetTime - curTime;
+    if (delay > 0.0) {
+        precise_delay_f64(delay);
+    }
+
+    curTime = clock_elapsed_f64();
+    if (curTime > sFrameTimeStart + 2 * sFrameTime) {
+        sFrameTimeStart = curTime;
+    } else {
+        sFrameTimeStart += sFrameTime;
+    }
+}
+
 void produce_interpolation_frames_and_delay(void) {
+    if (gCLIOpts.headless) {
+        produce_headless_frame_delay();
+        return;
+    }
+
     u32 refreshRate = get_target_refresh_rate();
 
     gRenderingInterpolated = true;
@@ -382,7 +406,9 @@ void *audio_thread(UNUSED void *arg) {
 void produce_one_frame(void) {
     CTX_EXTENT(CTX_NETWORK, network_update);
 
-    CTX_EXTENT(CTX_INTERP, patch_interpolations_before);
+    if (!gCLIOpts.headless) {
+        CTX_EXTENT(CTX_INTERP, patch_interpolations_before);
+    }
 
     CTX_EXTENT(CTX_GAME_LOOP, game_loop_one_iteration);
 
