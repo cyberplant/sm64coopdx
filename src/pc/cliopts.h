@@ -34,6 +34,7 @@ struct CLIOptions {
     bool coopnet;
     char coopnetPassword[MAX_CONFIG_STRING];
     bool disableMods;
+    bool enableAllMods;
     int enabledModsCount;
     char** enableMods;
     bool headless;

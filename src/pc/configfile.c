@@ -439,6 +439,16 @@ void enable_queued_mods(void) {
         free(sQueuedEnableModsHead);
         sQueuedEnableModsHead = next;
     }
+
+    // Dedicated servers: enable every discovered mod (dirs starting with '.' like
+    // .disabled are already skipped by directory_sanity_check).
+    if (gCLIOpts.enableAllMods && !gCLIOpts.disableMods) {
+        for (unsigned int i = 0; i < gLocalMods.entryCount; i++) {
+            struct Mod* mod = gLocalMods.entries[i];
+            if (mod == NULL) { continue; }
+            mod->enabled = true;
+        }
+    }
 }
 
 static void enable_mod_read(char** tokens, UNUSED int numTokens) {

@@ -32,6 +32,8 @@ Default args: `--headless --server 7777 --savepath /data --hide-loading-screen -
 
 Headless skips the software renderer (`gfx_run_dl`) and paces the game/network loop at 30 Hz, so a dedicated server should use a fraction of a core instead of pegging one. Ctrl-C / SIGTERM request a clean `game_exit()` (SDL signal handlers are disabled in this mode).
 
+Use `--enable-all-mods` to turn on every mod under the savepath `mods/` directory (recommended for dedicated servers). Names starting with `.` (e.g. `mods/.disabled/…`) are ignored by the loader — park unused packs there. Per-mod `--enable-mod NAME` still works when you want an explicit list.
+
 The image ships the stripped binary plus `dynos` / `lang` / `palettes` only (no bundled mods, no Mesa DRI/LLVM). Put optional mods next to the ROM under the `/data` mount.
 
 Override at the end of `docker run`, for example:
