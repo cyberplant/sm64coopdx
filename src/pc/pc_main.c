@@ -4,6 +4,9 @@
 #include <math.h>
 #include <time.h>
 #include <unistd.h>
+#ifndef _WIN32
+#include <signal.h>
+#endif
 
 #include "sm64.h"
 
@@ -96,6 +99,41 @@ static u32 sDrawnFrames = 0;
 
 bool gGameInited = false;
 bool gGfxInited = false;
+
+#ifndef _WIN32
+// SDL turns SIGINT/SIGTERM into SDL_QUIT; headless never polls events, so Ctrl-C
+// would otherwise do nothing. Request exit from the signal handler and exit cleanly
+// on the main loop (handlers must stay async-signal-safe).
+static volatile sig_atomic_t sHeadlessQuitRequested = 0;
+
+static void headless_on_signal(int sig) {
+    (void)sig;
+    sHeadlessQuitRequested = 1;
+}
+
+static void headless_install_signal_handlers(void) {
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = headless_on_signal;
+    sigemptyset(&sa.sa_mask);
+    // Do not set SA_RESTART — interrupt nanosleep in the frame pacer.
+    sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGTERM, &sa, NULL);
+}
+#endif
+
+static void headless_check_quit_request(void) {
+    if (!gCLIOpts.headless) { return; }
+#ifndef _WIN32
+    if (sHeadlessQuitRequested) {
+        game_exit();
+    }
+#endif
+    // Belt-and-suspenders if SDL still installed its handlers somehow.
+    if (SDL_QuitRequested()) {
+        game_exit();
+    }
+}
 
 f32 gMasterVolume;
 
@@ -404,6 +442,8 @@ void *audio_thread(UNUSED void *arg) {
 }
 
 void produce_one_frame(void) {
+    headless_check_quit_request();
+
     CTX_EXTENT(CTX_NETWORK, network_update);
 
     if (!gCLIOpts.headless) {
@@ -529,6 +569,14 @@ void* main_game_init(UNUSED void* dummy) {
 int main(int argc, char *argv[]) {
     // handle terminal arguments
     if (!parse_cli_opts(argc, argv)) { return 0; }
+
+    if (gCLIOpts.headless) {
+        // Before any SDL_Init (controllers still init SDL today): keep SIGINT/SIGTERM.
+        SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
+#ifndef _WIN32
+        headless_install_signal_handlers();
+#endif
+    }
 
 #ifdef _WIN32
     // handle Windows console
