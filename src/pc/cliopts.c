@@ -34,6 +34,7 @@ static void print_help(void) {
     printf("--no-discord              Disables discord integration.\n");
     printf("--disable-mods            Disables all mods that are already enabled.\n");
     printf("--enable-mod MODNAME      Enables a mod.\n");
+    printf("--enable-all-mods         Enables every mod found under the mods directory.\n");
     printf("--headless                Enable Headless mode.\n");
 #if defined(_WIN32)
     printf("--backend                 Sets the backend to either 'opengl' or 'directx'.");
@@ -111,6 +112,8 @@ bool parse_cli_opts(int argc, char* argv[]) {
             gCLIOpts.noDiscord = true;
         } else if (!strcmp(argv[i], "--disable-mods")) {
             gCLIOpts.disableMods = true;
+        } else if (!strcmp(argv[i], "--enable-all-mods")) {
+            gCLIOpts.enableAllMods = true;
         } else if (!strcmp(argv[i], "--enable-mod") && (i + 1) < argc) {
             gCLIOpts.enabledModsCount++;
             if (gCLIOpts.enableMods == NULL) {

@@ -88,5 +88,6 @@ CMD [ \
     "--savepath", "/data", \
     "--hide-loading-screen", \
     "--skip-update-check", \
-    "--no-discord" \
+    "--no-discord", \
+    "--enable-all-mods" \
 ]
